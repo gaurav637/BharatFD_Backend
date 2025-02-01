@@ -9,5 +9,5 @@ COPY package*.json ./
 # Install app dependencies
 RUN npm install
 COPY . .
-EXPOSE 8000
+EXPOSE 8080
 CMD ["npm","start"]
