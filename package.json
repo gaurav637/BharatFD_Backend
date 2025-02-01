@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "commit": "npx git-cz"
   },
   "author": "@Aniket Maithani - Gaurav Negi",
   "license": "ISC",
@@ -19,6 +20,19 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "commitizen": "^4.3.1",
-    "husky": "^8.0.0"
+    "commitlint": "^19.6.1",
+    "cz-customizable": "^7.4.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.4.3"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-customizable"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }
