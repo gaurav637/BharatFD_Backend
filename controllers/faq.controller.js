@@ -1,65 +1,61 @@
-const client = require('../config/redis');
-const logger = require('../utils/logger'); 
+const faqService  = require("../services/faq.service");
+const ErrorHandler = require("../utils/errorHandler");
 
-const getCache = async (key) => {
+
+exports.getFAQ = async (req, res, next) => {
   try {
-    logger.info(`Redis Fetching key: ${key}`);
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Redis Query timed out')), 5000)
-    );
-
-    const cacheData = await Promise.race([
-      new Promise((resolve, reject) => {
-        client.get(key, (err, data) => {
-          if (err) return reject(err);
-          resolve(data ? JSON.parse(data) : null);
-        });
-      }),
-      timeout
-    ]);
-
-    if (cacheData) {
-      logger.info(`Redis Cache hit for key: ${key}`);
-    } else {
-      logger.warn(`Redis Cache miss for key: ${key}`);
+    const lang = req.query.lang || "en";
+    // First, check if the FAQ is in cache
+    const cachedData = await faqService.getFAQFromCache(lang);
+    if (cachedData && cachedData!=3600) {
+      return res.status(200).json({
+        success: true,
+        data: cachedData,
+      });
     }
 
-    return cacheData;
-  } catch (error) {
-    logger.error(`Redis Error fetching key "${key}": ${error.message}`);
-    return null; // Return null instead of rejecting, to prevent application crash
-  }
-};
-
-
-const setCache = (key, data, expiry = 3600) => {
-  try {
-    logger.info(`Redis Setting key: ${key} with expiry: ${expiry}s`);
-    client.setex(key, expiry, JSON.stringify(data), (err) => {
-      if (err) {
-        logger.error(`Redis Failed to set key: ${key} - ${err.message}`);
-      }
+    // If not in cache, fetch from database
+    const faqs = await faqService.getAllFAQs();
+    const translatedFaqs = faqs.map((faq) => faq.getTranslatedContent(lang));
+    // Save the translated FAQs to cache for future requests
+    const data =  await faqService.saveFAQToCache(lang, translatedFaqs);
+    return res.status(200).json({
+      success: true,
+      data: translatedFaqs,
     });
   } catch (error) {
-    logger.error(`Redis Unexpected error setting key "${key}": ${error.message}`);
+    return next(error); // Let the error handler catch the error
   }
 };
 
-const deleteCache = (key) => {
+exports.createFAQ = async (req, res, next) => {
   try {
-    logger.info(`Redis Deleting key: ${key}`);
-    client.del(key, (err) => {
-      if (err) {
-        logger.error(`Redis Failed to delete key: ${key} - ${err.message}`);
-      }
+    const { question, answer } = req.body;
+    if (!question || !answer) {
+      return next(new ErrorHandler("Question and answer are required", 400));
+    }
+    const targetLang = req.query.lang || "en";
+    const faq = await faqService.createFAQ(question, answer, targetLang);
+    return res.status(201).json({
+      success: true,
+      message: `FAQ ${faq._id} Created:`,
+      data: faq,
     });
   } catch (error) {
-    logger.error(`Redis Unexpected error deleting key "${key}": ${error.message}`);
+    return next(error); // Let the error handler catch the error
   }
 };
 
-module.exports = { 
-    getCache, 
-    setCache, 
-    deleteCache 
+exports.deleteFAQ = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const faq = await faqService.deleteFAQById(id);
+    return res.status(200).json({
+      success: true,
+      message: `Faq ${id}  Deleted.`,
+      data: faq
+    });
+  } catch (error) {
+    return next(error); // Let the error handler catch the error
+  }
 };

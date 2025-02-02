@@ -1,21 +1,32 @@
-const mongoose = require('mongoose');
+const mongoose  = require("mongoose");
 
-const faqSchema = new mongoose.Schema({
-  question: { type: String, required: true },
-  answer: { type: String, required: true },
-  translations: {
-    hi: { question: String, answer: String },
-    bn: { question: String, answer: String },
+const faqSchema = new mongoose.Schema(
+  {
+    question: {
+      type: String,
+      required: true,
+    },
+    answer: {
+      type: String,
+      required: true,
+    },
+    translations: {
+      type: Map,
+      of: {
+        question: { type: String },
+        answer: { type: String },
+      },
+    },
   },
-});
+  { timestamps: true }
+);
 
-//  Method for the schema to get translated text
-faqSchema.methods.getTranslatedText = function (lang) {
-  const translation = this.translations[lang];
+faqSchema.methods.getTranslatedContent = function (lang) {
   return {
-    question: translation?.question || this.question,
-    answer: translation?.answer || this.answer,
+    question: this.translations.get(lang)?.question || this.question,
+    answer: this.translations.get(lang)?.answer || this.answer,
   };
 };
 
-module.exports = mongoose.model('FAQ', faqSchema);
+const FAQ = mongoose.model("FAQ", faqSchema);
+module.exports = FAQ;
