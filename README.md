@@ -30,8 +30,7 @@ The Multilingual FAQ System is a RESTful API service designed to manage frequent
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/bharatfd-api.git
-cd bharatfd-api
+git clone https://github.com/gaurav637/BharatFD_Backend
 ```
 
 2. Install dependencies:
@@ -43,25 +42,21 @@ npm install
 3. Create a `.env` file in the root directory:
 
 ```bash
-cp .env.example .env
+.example
 ```
 
 4. Configure the environment variables:
 
 ````bash
 # Application
-NODE_ENV=development
-PORT=3000
-API_PREFIX=api/v1
+PORT=8080
 
 # MongoDB
-MONGODB_URI=mongodb://localhost:27017/bharatfd
+MONGO_URI=mongodb://localhost:27017/bharatfd
 
 # Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-
+REDIS_URI=localhost
+````
 
 5. Start the server:
 
@@ -74,27 +69,27 @@ npm start
 The API is documented using Swagger. You can access the documentation at:
 
 ```bash
-http://localhost:3000/api-docs
+http://localhost:8080/docs
 ```
 
 ### Available Endpoints
 
-- `GET /api/v1/faqs` - Get all FAQs
-- `POST /api/v1/faqs` - Create new FAQ
-- `PUT /api/v1/faqs/:id` - Update FAQ
-- `DELETE /api/v1/faqs/:id` - Delete FAQ
-- `GET /api/v1/faqs/:language` - Get FAQs by language
+- `GET /api/faq/fetch` - Get all FAQs
+- `GET /api/faq/fetch?lang=hi` - Get all FAQs in specific language 
+- `POST /api/faq/create` - Create new FAQ
+- `DELETE /faq/v1/delete/:id` - Delete FAQ
+
 
 ## Environment Variables
 
 ````bash
 
 # MongoDB
-MONGODB_URI=mongodb://localhost:27017/bharatfd
+MONGO_URI=mongodb://localhost:27017/bharatfd
 
 # Redis
 REDIS_HOST=localhost
-REDIS_PORT=6379
+````
 
 ## Scripts
 
@@ -116,20 +111,19 @@ docker-compose up -d
 1. Build the application:
 
 ```bash
-npm run build
+npm start
 ```
 
-2. Start the production server:
 
-```bash
-npm run start:prod
-```
+## Flow Diagram:- 
+
+<img width="751" alt="Screenshot 2025-02-02 at 7 00 17 PM" src="https://github.com/user-attachments/assets/f6111593-a3ee-4d81-b217-811a01aeab65" />
 
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes (`npm run commit`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
