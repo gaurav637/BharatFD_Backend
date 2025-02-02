@@ -22,5 +22,4 @@ const connectRedis = async () => {
 };
 
 connectRedis();
-
 module.exports = client;

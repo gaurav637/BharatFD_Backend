@@ -1,9 +1,14 @@
 const express = require('express');
 require('dotenv').config();
+const cors = require('cors');
 const connectDB  = require('./config/db');
-const connectRedis = require("./config/redis");
 const router = require("./routes");
 const app = express();
+app.options('*', cors());
+app.use(cors({
+    origin: '*',
+    credentials : true,
+}));
 const PORT = process.env.PORT || 4040;
 
 const runServer = () => {
@@ -11,8 +16,6 @@ const runServer = () => {
     //  Database connection
     connectDB();
 
-    // Redis connection
-    connectRedis();
 
     // Middleware
     app.use(express.json());
