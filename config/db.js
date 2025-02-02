@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
-
 const connectDB = async () => {
     try {
         const envVariable = {
@@ -15,5 +14,4 @@ const connectDB = async () => {
         console.error('MongoDB Connection Failed. - Please try again..', error.message);
     }
 }
-
 module.exports = connectDB;
