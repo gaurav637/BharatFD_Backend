@@ -1,7 +1,7 @@
 const { createClient } = require('redis');
 require('dotenv').config();
 
-// Create a new Redis User
+// Create a new Redis client
 const client = createClient({
     username: process.env.REDIS_USERNAME || 'default',
     password: process.env.REDIS_PASSWORD,
@@ -14,12 +14,31 @@ const client = createClient({
 // Connect Redis
 const connectRedis = async () => {
     try {
-        await client.connect();
-        console.log('Redis connected successfully');
+        if (!client.isOpen) {
+            await client.connect();
+            if (process.env.NODE_ENV !== 'test') {
+                console.log('Redis connected successfully');
+            }
+        }
     } catch (error) {
-        console.error('Redis Client Error:', error);
+        if (process.env.NODE_ENV !== 'test') {
+            console.error('Redis Client Error:', error);
+        }
     }
+    return client;
 };
 
-connectRedis();
-module.exports = client;
+// Only connect if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+    connectRedis();
+}
+
+module.exports = {
+    client,
+    connectRedis,
+    quit: async () => {
+        if (client.isOpen) {
+            await client.quit();
+        }
+    }
+};

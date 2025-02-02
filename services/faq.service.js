@@ -1,46 +1,52 @@
 const { FAQ } = require("../models");
-const redis = require("../config/redis.js");
-const translateText  = require("../utils/translation");
+const { client } = require('../config/redis');
+const translateText = require("../utils/translation");
 const ErrorHandler = require("../utils/errorHandler");
 
-exports.getFAQFromCache = async (lang) => {
+const getFAQFromCache = async (lang = 'en') => {
     try {
-        const cacheKey = `faq:${lang}`;
-        let data = await redis.get(cacheKey);
-
-        console.log("Cached data ->", data);  // Debugging: Check stored data
-        
-        if (!data) return null;
-
-        let faqs = JSON.parse(data);
-
-        // Translate each FAQ's question and answer
-        const translatedFaqs = await Promise.all(faqs.map(async (faq) => ({
-            question: await translateText(faq.question, lang),
-            answer: await translateText(faq.answer, lang)
-        })));
-
-        return translatedFaqs;
+        const cachedFAQs = await client.get(`faqs:${lang}`);
+        if (cachedFAQs) {
+            return JSON.parse(cachedFAQs);
+        }
+        return [];
     } catch (error) {
-        throw new ErrorHandler(error.message, 500);
+        throw new Error('Error fetching FAQs from cache');
     }
 };
-  
-exports.saveFAQToCache = async (lang, faqs) => {
+
+const createFAQ = async (question, answer, targetLang = 'en') => {
     try {
-        const cacheKey = `faq:${lang}`;
+        const translatedQuestion = await translateText(question, targetLang);
+        const translatedAnswer = await translateText(answer, targetLang);
+
+        const faq = await FAQ.create({
+            question,
+            answer,
+            translations: {
+                [targetLang]: {
+                    question: translatedQuestion,
+                    answer: translatedAnswer,
+                },
+            },
+        });
+        return faq;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const saveFAQToCache = async (lang, faqs) => {
+    try {
+        const cacheKey = `faqs:${lang}`;
         const data = JSON.stringify(faqs);
-        console.log("data -. ", data);
-
-        await redis.set(cacheKey, data); // Store data
-        await redis.expire(cacheKey, 3600); // Set expiration separately
-
-        console.log(`FAQ cached for ${lang} with key ${cacheKey}`); // Debugging
+        await client.set(cacheKey, data);
+        await client.expire(cacheKey, 3600);
+        return faqs;
     } catch (error) {
-        throw new ErrorHandler(error.message, 500);
+        throw new Error(error.message);
     }
 };
-
 
 exports.getAllFAQs = async () => {
   try {
@@ -49,27 +55,6 @@ exports.getAllFAQs = async () => {
       throw new ErrorHandler("Not found", 404);
     }
     return faqs;
-  } catch (error) {
-    throw new ErrorHandler(error.message, 500);
-  }
-};
-
-exports.createFAQ = async (question, answer, targetLang) => {
-  try {
-    const translatedQuestion = await translateText(question, targetLang);
-    const translatedAnswer = await translateText(answer, targetLang);
-
-    const faq = await FAQ.create({
-      question,
-      answer,
-      translations: {
-        [targetLang]: {
-          question: translatedQuestion,
-          answer: translatedAnswer,
-        },
-      },
-    });
-    return faq;
   } catch (error) {
     throw new ErrorHandler(error.message, 500);
   }
@@ -86,4 +71,10 @@ exports.deleteFAQById = async (id) => {
       throw new ErrorHandler(error.message, 500);
     }
   };
+
+module.exports = {
+    getFAQFromCache,
+    createFAQ,
+    saveFAQToCache
+};
   
