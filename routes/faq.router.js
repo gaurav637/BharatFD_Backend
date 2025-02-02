@@ -1,9 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { getFAQs, createFAQ, deleteFAQ } = require('../controllers/faq.controller');
+const faqController = require("../controllers/faq.controller");
 
-router.get('/', getFAQs);
-router.post('/', createFAQ);
-router.delete('/:id', deleteFAQ);
+router.get(
+    '/fetch', 
+    faqController.getFAQ
+);
+router.post(
+    '/create', 
+    faqController.createFAQ
+);
 
+router.delete(
+    '/delete/:id',
+    faqController.deleteFAQ
+)
 module.exports = router;

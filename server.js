@@ -1,30 +1,23 @@
-const express = require('express');
-require('dotenv').config();
-const cors = require('cors');
-const connectDB = require('./config/db');
+const express = require("express");
+require("dotenv").config();
+const connectDB = require("./config/db");
 const router = require("./routes");
-
+const cors = require("cors");
+const swaggerDocs = require("./config/swagger");
 const app = express();
-
+const PORT = process.env.PORT || 4040;
+//  Database connection
+connectDB();
 // Middleware
-app.options('*', cors());
-app.use(cors({
-    origin: '*',
-    credentials: true,
-}));
+app.use(cors());
 app.use(express.json());
-
-// Router 
+// Router
 app.use("/api", router);
-
 // Routes
-app.get('/', (req, res) => {
-    res.send('Hello, Welcome to BharatFD!');
+app.get("/", (req, res) => {
+  res.send("Hello, Welcome to BharatFD!");
 });
-
-// Only connect to DB and Redis if not testing
-if (process.env.NODE_ENV !== 'test') {
-    connectDB();
-}
-
-module.exports = app;
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
