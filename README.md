@@ -1,6 +1,6 @@
 # Multilingual FAQ System
 
-A RESTful API service for managing FAQs and other resources.
+The Multilingual FAQ System is a RESTful API service designed to manage frequently asked questions (FAQs) with multilingual support. It includes caching for improved performance, robust error handling, and a well-structured API for easy integration. Built with Node.js, Express.js, MongoDB, and Redis, this system ensures efficient retrieval and management of FAQs.
 
 ## Features
 
